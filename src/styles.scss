@@ -1,1 +1,34 @@
 /* You can add global styles to this file, and also import other style files */
+body,
+html {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background-color: whitesmoke;
+  margin: 0;
+}
+
+.fx-row {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+}
+.fx-fill {
+  flex: 1 1 auto;
+  box-sizing: border-box;
+}
+
+// .box {
+//   padding: 16px;
+//   min-height: 400px;
+//   min-width: 700px;
+//   background: rgba(0, 0, 0, 0.07);
+// }
+.box {
+  padding: 16px;
+  min-height: 50px;
+  min-width: 100px;
+  background: rgba(0, 0, 0, 0.07);
+}
