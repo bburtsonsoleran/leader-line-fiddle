@@ -1,5 +1,38 @@
+<div style="margin: auto; padding: 80px">
+  <button (click)="onAddNodeClick()" [style.padding.px]="30">ADD NODE</button>
+</div>
 <div class="fx-row" [style.padding.px]="10">
-  <div cdkDrag class="box" #start>Start</div>
+  <div
+    cdkDrag
+    class="box"
+    appLeaderLineElement
+    appLeaderLineElementId="building"
+  >
+    <div class="card-content fx-fill"><span> Building </span></div>
+    <div class="anchor-container">
+      <div
+        *ngFor="let t of targets; let i = index"
+        appLeaderLineAnchor
+        [appLeaderLineAnchorFor]="'item' + i"
+      ></div>
+    </div>
+  </div>
   <div class="fx-fill"></div>
-  <div cdkDrag class="box" #end>End</div>
+</div>
+<div
+  *ngFor="let t of targets; let i = index"
+  class="fx-row"
+  [style.padding.px]="10"
+>
+  <div class="fx-fill"></div>
+  <div
+    cdkDrag
+    class="box"
+    appLeaderLineElement
+    [appLeaderLineElementId]="'item' + i"
+  >
+    <div class="card-content fx-fill">
+      <span> Item {{ i }} </span>
+    </div>
+  </div>
 </div>

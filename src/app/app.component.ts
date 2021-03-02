@@ -1,76 +1,74 @@
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
-import { animationFrameScheduler, BehaviorSubject, interval } from 'rxjs';
-import { throttle, throttleTime } from 'rxjs/operators';
-declare var LeaderLine: any;
-export interface Vector2 {
-  x: number;
-  y: number;
-}
+import { Component, QueryList, ViewChildren } from '@angular/core';
+import { animationFrames } from '@soleran/common';
+
+import { LeaderLineAnchorDirective } from './leader-line-anchor.directive';
+import { LeaderLineElementDirective } from './leader-line-element.directive';
+import { startWith } from 'rxjs/operators';
+import { Observable, Subscription } from 'rxjs';
+import { LeaderLine } from './leader-line';
+declare var LeaderLine: LeaderLine;
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  @ViewChild('start', { static: true }) start: ElementRef<HTMLDivElement>;
-  @ViewChild('end', { static: true }) end: ElementRef<HTMLDivElement>;
+  @ViewChildren(LeaderLineElementDirective)
+  lineElements: QueryList<LeaderLineElementDirective>;
 
-  mouse$ = new BehaviorSubject<Vector2>({ x: 0, y: 0 });
-  @HostListener('document:mousemove', ['$event']) mouseMove = ({
-    clientX,
-    clientY,
-  }) => this.mouse$.next({ x: clientX, y: clientY });
+  @ViewChildren(LeaderLineAnchorDirective)
+  anchorElements: QueryList<LeaderLineAnchorDirective>;
 
-  ngOnInit() {
-    const line = new LeaderLine(
-      this.start.nativeElement,
-      this.end.nativeElement
+  targets = new Array(1).fill(null);
+
+  lines: LeaderLine[] = [];
+
+  private _subs = new Subscription();
+  ngAfterViewInit(): void {
+    this._subs.add(
+      this._lineElementChanges().subscribe((items) => {
+        this._removeLines();
+        this.lines = this._createLines(items);
+      })
     );
-    interval(1, animationFrameScheduler).subscribe(() => {
-      line.position();
+    this._subs.add(
+      animationFrames(1000 / 60).subscribe((_) => this._renderLines())
+    );
+  }
+  ngOnDestroy(): void {
+    this._subs.unsubscribe();
+  }
+  onAddNodeClick() {
+    this.targets.push(null);
+  }
+
+  private _removeLines(): void {
+    this.lines.forEach((l) => l.remove());
+  }
+  private _renderLines(): void {
+    this.lines.forEach((l) => l.position());
+  }
+  private _lineElementChanges(): Observable<
+    QueryList<LeaderLineElementDirective>
+  > {
+    return this.lineElements.changes.pipe(startWith(this.lineElements));
+  }
+  private _createLines(items: QueryList<LeaderLineElementDirective>) {
+    const root = items.find((el) => el.id === 'building');
+    const targets = items.filter((el) => el.id !== 'building');
+    return root.anchors.map((anchor) => {
+      const target = targets.find((t) => t.id === anchor.targetId);
+      return this._createLine(anchor, target);
     });
-
-    this.mouse$.subscribe((pos) => {
-      this._lookAt(this.start, pos);
-      this._lookAt(this.end, pos);
+  }
+  private _createLine(
+    anchor: LeaderLineAnchorDirective,
+    target: LeaderLineElementDirective
+  ): LeaderLine {
+    return new LeaderLine({
+      start: anchor.elementRef.nativeElement,
+      end: target.elementRef.nativeElement,
     });
-  }
-
-  private _lookAt(element: ElementRef<HTMLElement>, position: Vector2) {
-    const css = element.nativeElement.style.transform
-      .split(' ')
-      .filter((r) => !r.startsWith('rotate'))
-      .join(' ');
-
-    const rotation = this._calcRotation(element, position);
-
-    const rotationCss = this._formatRotationCss(rotation);
-
-    element.nativeElement.style.transform = `${css} ${rotationCss}`;
-  }
-
-  private _calcRotation(element: ElementRef<HTMLElement>, pos: Vector2) {
-    const { clientHeight, clientWidth } = element.nativeElement;
-    const { top, left } = element.nativeElement.getBoundingClientRect();
-    const avgSideLength = (clientHeight + clientWidth) / 2;
-    const degQuotient = 360 / 100;
-    const viewRange = 0.22;
-    const scale = (avgSideLength / degQuotient) * viewRange;
-    const xAxis = (pos.y - top) / clientHeight;
-    const yAxis = (pos.x - left) / clientWidth;
-
-    const rotation = {
-      x: parseFloat((xAxis * -scale + scale / 2).toFixed(1)),
-      y: parseFloat((yAxis * scale - scale / 2).toFixed(1)),
-    };
-    return rotation;
-  }
-  private _formatRotationCss({ x, y }: Vector2) {
-    return `rotateX(${x}deg) rotateY(${y}deg)`;
-  }
-
-  private _removeRotationCss(cssStr: string) {
-    const regex = /rotate[XY]\([A-z0-9\-\.]+\)/gim;
-    return cssStr.replace(regex, '');
   }
 }

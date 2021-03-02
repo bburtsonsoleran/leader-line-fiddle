@@ -8,6 +8,7 @@ html {
   box-sizing: border-box;
   background-color: whitesmoke;
   margin: 0;
+  font-family: Roboto;
 }
 
 .fx-row {
@@ -20,15 +21,21 @@ html {
   box-sizing: border-box;
 }
 
-// .box {
-//   padding: 16px;
-//   min-height: 400px;
-//   min-width: 700px;
-//   background: rgba(0, 0, 0, 0.07);
-// }
 .box {
-  padding: 16px;
+  display: flex;
   min-height: 50px;
   min-width: 100px;
   background: rgba(0, 0, 0, 0.07);
+}
+
+.anchor-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.card-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

@@ -4,10 +4,18 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { CdkScrollableModule } from '@angular/cdk/scrolling';
+import { LeaderLineElementDirective } from './leader-line-element.directive';
+import { LeaderLineAnchorDirective } from './leader-line-anchor.directive';
 
 @NgModule({
-  declarations: [AppComponent],
-  imports: [BrowserModule, AppRoutingModule, DragDropModule],
+  declarations: [AppComponent, LeaderLineElementDirective, LeaderLineAnchorDirective],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    DragDropModule,
+    CdkScrollableModule,
+  ],
   providers: [],
   bootstrap: [AppComponent],
 })
